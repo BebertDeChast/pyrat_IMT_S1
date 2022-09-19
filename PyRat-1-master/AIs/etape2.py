@@ -14,8 +14,7 @@ MOVE_UP = 'U'
 # Please put your code here (imports, variables, functions...)
 ##############################################################
 
-moves = []
-index = 0
+moves = q.Queue()
 
 def find_direction(player_location, destination):
     difference = (player_location[0] - destination[0], player_location[1] - destination[1])  # Computing the difference to go faster
@@ -30,6 +29,7 @@ def find_direction(player_location, destination):
     else:
         raise Exception("find_direction input error : Difference of both location is not between -1 and 1.")
 
+
 def create_structure() -> q.Queue:
     # Create an empty FIFO
     return q.Queue()
@@ -42,7 +42,7 @@ def push_to_structure(structure: q.Queue, element: any) -> None:
 
 def pop_from_structure(structure: q.Queue) -> any:
     # Extract an element from the FIFO
-    return structure.get()
+    return structure.get(block=False)
 
 
 def neighbors(maze_map, player_location: tuple) -> list:
@@ -109,8 +109,8 @@ def find_route(routing_table, source_location, target_location):
     current_location = target_location
     while current_location != source_location:
         current_location = routing_table[current_location]
-        path.append(current_location)
-    return path[::-1]
+        path = [current_location] + path
+    return path
 
 
 def moves_from_locations(locations):
@@ -120,7 +120,7 @@ def moves_from_locations(locations):
     Returns void"""
     global moves
     for i in range(len(locations) - 1):
-        moves.append(find_direction(locations[i], locations[i + 1]))
+        push_to_structure(moves, find_direction(locations[i], locations[i + 1]))
 
 ##############################################################
 # The preprocessing function is called at the start of a game
@@ -141,10 +141,9 @@ def preprocessing(maze_map, maze_width, maze_height, player_location, opponent_l
 
     # Example prints that appear in the shell only at the beginning of the game
     # Remove them when you write your own program
-    explored, routing_table=traversal(player_location, maze_map)
-    path = find_route(routing_table,player_location,pieces_of_cheese[0])
+    explored, routing_table = traversal(player_location, maze_map)
+    path = find_route(routing_table, player_location, pieces_of_cheese[0])
     moves_from_locations(path)
-    
 
 
 ##############################################################
@@ -165,7 +164,4 @@ def preprocessing(maze_map, maze_width, maze_height, player_location, opponent_l
 def turn(maze_map, maze_width, maze_height, player_location, opponent_location, player_score, opponent_score, pieces_of_cheese, time_allowed):
     # We go up at every turn
     # You should replace this with more intelligent decisions
-    global index
-    future_move = moves[index]
-    index += 1
-    return future_move
+    return pop_from_structure(moves)
