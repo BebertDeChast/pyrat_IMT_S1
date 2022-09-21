@@ -1,2 +1,2 @@
 #!/bin/sh
-python3 ./PyRat-1-master/pyrat.py --rat ./PyRat-1-master/AIs/p_random.py  --python ./PyRat-1-master/AIs/etape2.py --tests 100 --nodrawing -x 10 -y 10 -p 6 -md 0.0 --synchronous
+python3 ./PyRat-1-master/pyrat.py --rat ./PyRat-1-master/AIs/etape3.py  --python ./PyRat-1-master/AIs/etape4.py --tests 50 --nodrawing -x 11 -y 11 -p 1 -md 0.50

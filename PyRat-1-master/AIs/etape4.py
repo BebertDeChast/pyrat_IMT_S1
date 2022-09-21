@@ -3,7 +3,7 @@
 # The four possibilities are defined here
 ##############################################################
 
-import queue as q
+import heapq as hq
 MOVE_DOWN = 'D'
 MOVE_LEFT = 'L'
 MOVE_RIGHT = 'R'
@@ -16,6 +16,7 @@ MOVE_UP = 'U'
 
 moves = []
 index = 0
+
 
 def find_direction(player_location, destination):
     difference = (player_location[0] - destination[0], player_location[1] - destination[1])  # Computing the difference to go faster
@@ -30,22 +31,8 @@ def find_direction(player_location, destination):
     else:
         raise Exception("find_direction input error : Difference of both location is not between -1 and 1.")
 
-def create_structure() -> q.Queue:
-    # Create an empty FIFO
-    return q.Queue()
 
-
-def push_to_structure(structure: q.Queue, element: any) -> None:
-    # Add an element to the FIFO
-    structure.put(element)
-
-
-def pop_from_structure(structure: q.Queue) -> any:
-    # Extract an element from the FIFO
-    return structure.get()
-
-
-def neighbors(maze_map, player_location: tuple) -> list:
+def find_neighbors(maze_map, player_location: tuple) -> list:
     """
     Find the neighbors of a given location
     Variables :
@@ -57,7 +44,30 @@ def neighbors(maze_map, player_location: tuple) -> list:
     return list(maze_map[player_location].keys())
 
 
-def traversal(start_vertex: tuple, graph):
+def add_or_replace(value, name, min_heap, distance_table):
+    """
+    Performs an add or replace operation on a min heap of the format (value, name). 
+    Variables :
+        value : int, The value you want to add or replace
+        name : String, The name associated to the value
+        min_heap : heapq.list, the min_heap
+    Outputs an int if it added or replaced, -1 if it did nothing.
+    """
+    for i in range(len(min_heap)):
+        # Cycling in the min heap to find the name and the old value associated with it
+        if min_heap[i][1] == name:
+            old_value = min_heap[i][0]
+            if old_value > value:  # Replacing old value if new value is lower
+                min_heap[i] = (value, name)  # ! May need a min_heap.sort() but we don't know yet
+                return value
+
+    if old_value == -1:  # In case the name was not found, we push the new name and new value into the heap
+        hq.heappush(min_heap, (value, name))
+        return value
+    return -1
+
+
+def dijkstra(start_vertex: tuple, graph):
     """
     BFS traversal
     Variables :
@@ -66,34 +76,33 @@ def traversal(start_vertex: tuple, graph):
 
     Returns list[tuple(int,int)], dict{tuple(int,int): tuple(int,int)}
     """
-    # First we create either a LIFO or a FIFO
-    queuing_structure = create_structure()
+    distances_q = []
     # Add the starting vertex with None as parent
-    push_to_structure(queuing_structure, (start_vertex, None))
+    hq.heappush(distances_q, (0, start_vertex))
     # Initialize the outputs
+    routing_table = {start_vertex: None}
+    distance_table = {start_vertex: 0}
     explored_vertices = []
-    routing_table = {}
     # Iterate while some vertices remain
-    while queuing_structure.qsize() > 0:
+    while len(distances_q):
 
         # This will return the next vertex to be examined, and the choice of queuing structure will change the resulting order
-        (current_vertex, parent) = pop_from_structure(queuing_structure)
-
-        # Tests whether the current vertex is in the list of explored vertices
+        (length, current_vertex) = hq.heappop(distances_q)
         if current_vertex not in explored_vertices:
-            # Mark the current_vertex as explored
             explored_vertices.append(current_vertex)
+            neighbors = find_neighbors(graph, current_vertex)
 
-            # Update the routing table accordingly
-            routing_table[current_vertex] = parent
-
-            # Examine neighbors of the current vertex
-            for neighbor in neighbors(graph, current_vertex):
-                # We push all unexplored neighbors to the queue
+            # Going over the distance with each neighbor
+            for neighbor in neighbors:
                 if neighbor not in explored_vertices:
-                    push_to_structure(queuing_structure, (neighbor, current_vertex))
-
-    return explored_vertices, routing_table
+                    new_full_length = length + graph[current_vertex][neighbor]  # get the length from source passing by the current vertex
+                    # Now we perform the add & replace
+                    if not(neighbor in routing_table) or distance_table[neighbor] > new_full_length: # Case Add or replace
+                        distance_table[neighbor] = new_full_length
+                        routing_table[neighbor] = current_vertex
+                        hq.heappush(distances_q, (new_full_length, neighbor))
+    print(routing_table)
+    return routing_table
 
 
 def find_route(routing_table, source_location, target_location):
@@ -141,10 +150,9 @@ def preprocessing(maze_map, maze_width, maze_height, player_location, opponent_l
 
     # Example prints that appear in the shell only at the beginning of the game
     # Remove them when you write your own program
-    explored, routing_table=traversal(player_location, maze_map)
-    path = find_route(routing_table,player_location,pieces_of_cheese[0])
+    routing_table = dijkstra(player_location, maze_map)
+    path = find_route(routing_table, player_location, pieces_of_cheese[0])
     moves_from_locations(path)
-    
 
 
 ##############################################################
