@@ -58,7 +58,7 @@ def add_or_replace(value, name, min_heap, distance_table):
         if min_heap[i][1] == name:
             old_value = min_heap[i][0]
             if old_value > value:  # Replacing old value if new value is lower
-                min_heap[i] = (value, name)  # ! May need a min_heap.sort() but we don't know yet
+                min_heap[i] = (value, name) 
                 return value
 
     if old_value == -1:  # In case the name was not found, we push the new name and new value into the heap
@@ -69,12 +69,12 @@ def add_or_replace(value, name, min_heap, distance_table):
 
 def dijkstra(start_vertex: tuple, graph):
     """
-    BFS traversal
+    Dijkstra Algo
     Variables :
         start_vertex : tuple(int,int)
         graph : dict{tuple(int,int) : dict{tuple(int,int) : int}}
 
-    Returns list[tuple(int,int)], dict{tuple(int,int): tuple(int,int)}
+    Returns dict{tuple(int,int): tuple(int,int)}
     """
     # Creating structure
     distance_table = {v: -1 for v in list(graph.keys())}
