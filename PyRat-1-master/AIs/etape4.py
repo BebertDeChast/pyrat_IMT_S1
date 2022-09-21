@@ -76,32 +76,37 @@ def dijkstra(start_vertex: tuple, graph):
 
     Returns list[tuple(int,int)], dict{tuple(int,int): tuple(int,int)}
     """
+    # Creating structure
+    distance_table = {v: -1 for v in list(graph.keys())}
     distances_q = []
-    # Add the starting vertex with None as parent
-    hq.heappush(distances_q, (0, start_vertex))
-    # Initialize the outputs
-    routing_table = {start_vertex: None}
-    distance_table = {start_vertex: 0}
     explored_vertices = []
-    # Iterate while some vertices remain
+    routing_table = {}
+
+    # Initialize with start_vertex
+    hq.heappush(distances_q, (0, start_vertex))
+    distance_table[start_vertex] = 0
+    routing_table = {start_vertex: None}
+
+    # Iterate while some vertices remains in the min heap
     while len(distances_q):
 
-        # This will return the next vertex to be examined, and the choice of queuing structure will change the resulting order
+        # This will return the next vertex to be examined.
         (length, current_vertex) = hq.heappop(distances_q)
-        if current_vertex not in explored_vertices:
-            explored_vertices.append(current_vertex)
-            neighbors = find_neighbors(graph, current_vertex)
 
+        if current_vertex not in explored_vertices:  # We check that this vertex was not already examined
+            explored_vertices.append(current_vertex)
+
+            neighbors = find_neighbors(graph, current_vertex)
             # Going over the distance with each neighbor
             for neighbor in neighbors:
                 if neighbor not in explored_vertices:
-                    new_full_length = length + graph[current_vertex][neighbor]  # get the length from source passing by the current vertex
-                    # Now we perform the add & replace
-                    if not(neighbor in routing_table) or distance_table[neighbor] > new_full_length: # Case Add or replace
+                    new_full_length = length + graph[current_vertex][neighbor]  # get the length from the start passing by the current vertex
+
+                    # Now we perform the add & replace with this length value
+                    if distance_table[neighbor] == -1 or distance_table[neighbor] > new_full_length:  # We check if no value was added yet or if the new value is better
                         distance_table[neighbor] = new_full_length
                         routing_table[neighbor] = current_vertex
-                        hq.heappush(distances_q, (new_full_length, neighbor))
-    print(routing_table)
+                        hq.heappush(distances_q, (new_full_length, neighbor))  # Pushing the neighbor to the heap for further investigation
     return routing_table
 
 
@@ -118,8 +123,8 @@ def find_route(routing_table, source_location, target_location):
     current_location = target_location
     while current_location != source_location:
         current_location = routing_table[current_location]
-        path.append(current_location)
-    return path[::-1]
+        path = [current_location] + path
+    return path
 
 
 def moves_from_locations(locations):
