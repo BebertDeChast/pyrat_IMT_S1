@@ -168,26 +168,33 @@ def naive_tsp(meta_graph, initial_vertex):
         meta_graph: dict{tuple(int, int), dict{tuple(int, int), int}}
         initial_vertex: tuple(int, int)
     Returns : The list of coordinates we must go through
-        list(tuple(int,int))
+        best_path  = list(tuple(int,int))
     """
 
-    # Nonlocal list of visited vertices (nonlocal variables are basically global variables for nested functions)visited_vertices = []
-    result = []
+    results = [] # We store the results of each branch
 
     def _naive_tsp(current_vertex, current_length=0, path=[initial_vertex]):
-        nonlocal result
-        if len(path) == len(meta_graph):
-            result.append((current_length, path))
+        nonlocal results
+        if len(path) == len(meta_graph): # Recursion ending condition
+            results.append((current_length, path))
             return
 
-        else:
+        else: # Continuing recursion
             for neighbor in find_neighbors(meta_graph, current_vertex):
                 if neighbor not in path:
                     _naive_tsp(neighbor, current_length + meta_graph[current_vertex][neighbor], path + [neighbor])
 
     _naive_tsp(initial_vertex)
 
-    return result
+    # Now we cycle in our results to find which path has the lowest length
+    best_length = -1
+    best_path = []
+    for i in range(len(results)):
+        if best_length == -1 or best_length > results[i][0]:
+            best_length = results[i][0]
+            best_path = results[i][1]
+    
+    return best_path
 
 
 def tsp(meta_graph, initial_vertex):
