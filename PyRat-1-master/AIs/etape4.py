@@ -80,24 +80,27 @@ def dijkstra(start_vertex: tuple, graph):
     distance_table = {}
     distances_q = [] # the heap
     routing_table = {}
+    has_been_explored = {vertex: False for vertex in graph}
     # Initialize with start_vertex
     hq.heappush(distances_q, (0, start_vertex, None))
 
     # Iterate while some vertices remains in the min heap
-    while len(distance_table) != len(graph):
+    while len(distances_q) != 0:
 
         # This will return the next vertex to be examined.
         (length, current_vertex, current_parent) = hq.heappop(distances_q)
 
-        if current_vertex not in distance_table:  # We check that this vertex was not already examined
+        if not has_been_explored[current_vertex]:  # We check that this vertex was not already examined
+            has_been_explored[current_vertex] = True 
             distance_table[current_vertex] = length
             routing_table[current_vertex] = current_parent
 
             neighbors = find_neighbors(graph, current_vertex)
             # Going over the distance with each neighbor
             for neighbor in neighbors:
-                new_full_length = length + graph[current_vertex][neighbor]  # get the length from the start passing by the current vertex
-                hq.heappush(distances_q, (new_full_length, neighbor, current_vertex))  # Pushing the neighbor to the heap for further investigation
+                if not has_been_explored[neighbor]:
+                    new_full_length = length + graph[current_vertex][neighbor]  # get the length from the start passing by the current vertex
+                    hq.heappush(distances_q, (new_full_length, neighbor, current_vertex))  # Pushing the neighbor to the heap for further investigation
     return routing_table
 
 
