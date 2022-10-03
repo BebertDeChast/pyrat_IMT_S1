@@ -217,32 +217,9 @@ def give_score(graph, current_vertex, neighbors):
     return scored_neighbors
 
 
-def greedy_prepro(graph, initial_vertex, vertices_to_visit):
-    """
-    Give the path that go through all vertices to visit, calculated with a greedy algorithm
-    Variables :
-        graph : dict{tuple(int, int), dict{tuple(int, int), int}}
-        initial_vertex : tuple(int, int)
-        vertices_to_visit : list[tuple(int, int)]
-    Outputs :
-        list[tuple(int, int)] : Path to follow 
-    """
-    greedy_path = [initial_vertex]
-    current_vertex = initial_vertex
-    for i in range(len(vertices_to_visit)):
-        scores = give_score(graph, current_vertex, vertices_to_visit)
-        distance, greedy_choice, routing_table = hq.heappop(scores)
-        greedy_path += find_route(routing_table, current_vertex, greedy_choice)[1:]
-
-        # Now we append parameters for the next for loop
-        current_vertex = greedy_choice
-        vertices_to_visit.remove(current_vertex)
-    return greedy_path
-
-
 def greedy(graph, initial_vertex, vertices_to_visit):
     """
-    Give the path that go through all vertices to visit, calculated with a greedy algorithm
+    Give the closest vertice to visit and the path to go to it
     Variables :
         graph : dict{tuple(int, int), dict{tuple(int, int), int}}
         initial_vertex : tuple(int, int)
@@ -250,13 +227,10 @@ def greedy(graph, initial_vertex, vertices_to_visit):
     Outputs :
         list[tuple(int, int)] : Path to follow to next closest cheese
     """
-    greedy_path = [initial_vertex]
     current_vertex = initial_vertex
     scores = give_score(graph, current_vertex, vertices_to_visit)
     distance, greedy_choice, routing_table = hq.heappop(scores)
-    greedy_path += find_route(routing_table, current_vertex, greedy_choice)[1:]
-
-    return greedy_path
+    return find_route(routing_table, current_vertex, greedy_choice)
 
 
 ##############################################################
@@ -275,6 +249,8 @@ def greedy(graph, initial_vertex, vertices_to_visit):
 
 
 def preprocessing(maze_map, maze_width, maze_height, player_location, opponent_location, pieces_of_cheese, time_allowed):
+    result_best = greedy(maze_map, player_location, pieces_of_cheese)
+    moves_from_locations(result_best)
     return
 
 
