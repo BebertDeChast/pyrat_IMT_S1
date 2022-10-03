@@ -4,6 +4,7 @@
 ##############################################################
 
 import heapq as hq
+import time
 MOVE_DOWN = 'D'
 MOVE_LEFT = 'L'
 MOVE_RIGHT = 'R'
@@ -16,6 +17,7 @@ MOVE_UP = 'U'
 
 moves = []
 index = 0
+max_index = 0
 
 # ? Routing algorithms
 
@@ -296,7 +298,6 @@ def turn(maze_map, maze_width, maze_height, player_location, opponent_location, 
     global moves
     global index
     if len(moves) == index:
-        print(f"Recalculating  {index} {moves}")
         index = 0
         moves = []
         result_best = greedy(maze_map, player_location, pieces_of_cheese)
