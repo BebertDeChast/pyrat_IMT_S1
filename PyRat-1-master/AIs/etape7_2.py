@@ -19,6 +19,8 @@ moves = []
 index = 0
 max_index = 0
 target = []
+proximity = 0
+ahead_of_us = 0
 
 # ? Routing algorithms
 
@@ -227,12 +229,10 @@ def enemy_proximity_score(graph, target, enemy_location, player_location):
         enemy_location : tuple(int, int), enemy location
     Outputs : int
     """
-    distance = dijkstra(target, graph)[1]
-    coordinates_difference_enemy = distance[enemy_location]
-    coordinate_difference_player = distance[player_location]
+    coordinates_difference_enemy = abs(target[0] - enemy_location[0]) + abs(target[1] - enemy_location[1])
+    coordinate_difference_player = abs(target[0] - player_location[0]) + abs(target[1] - player_location[1])
     score = 10 * (coordinate_difference_player // (coordinates_difference_enemy + 1))
     return score
-
 
 def greedy(graph, initial_vertex, vertices_to_visit, opponent_location, player_location, number_of_closest_wanted=False):
     """
@@ -301,13 +301,15 @@ def turn(maze_map, maze_width, maze_height, player_location, opponent_location, 
     global moves
     global index
     global target
+    global proximity
+    global ahead_of_us
     recalculate = False
     # Check if cheese still exist
     try:
         pieces_of_cheese.index(target[0])
     except ValueError:
         recalculate = True
-
+    
     if len(moves) == index or recalculate:
         recalculate = False
         index = 0
