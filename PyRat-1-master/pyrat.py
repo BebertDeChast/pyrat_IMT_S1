@@ -287,16 +287,17 @@ def run_game(screen, infoObject):
         pieces_of_cheese, player1_location, player2_location = generate_pieces_of_cheese(args.pieces, width, height, not (args.nonsymmetric), player1_location, player2_location, args.start_random)
     if args.save:
         savefile = open("saves" + os.path.sep + str(int(round(time.time() * 1000))), 'w')
-        savefile.write("# Random seed\n")
-        savefile.write(str(random_seed) + "\n")
-        savefile.write("# MazeMap\n")
-        savefile.write(str(maze) + "\n")
-        savefile.write("# Pieces of cheese\n")
-        savefile.write(str(pieces_of_cheese) + "\n")
-        savefile.write("# Rat initial location\n")
-        savefile.write(str(player1_location) + "\n")
-        savefile.write("# Python initial location\n")
-        savefile.write(str(player2_location) + "\n")
+        savefile.write("{'x' :" +f"{args.width}, 'y' :" + f"{args.height}"+"}\n")        
+        # savefile.write("# Random seed\n")
+        # savefile.write(str(random_seed) + "\n")
+        # savefile.write("# MazeMap\n")
+        # savefile.write(str(maze) + "\n")
+        # savefile.write("# Pieces of cheese\n")
+        # savefile.write(str(pieces_of_cheese) + "\n")
+        # savefile.write("# Rat initial location\n")
+        # savefile.write(str(player1_location) + "\n")
+        # savefile.write("# Python initial location\n")
+        # savefile.write(str(player2_location) + "\n")
 
     # Create communications queues with players
     debug("Generating pipes with players", 1)
@@ -489,11 +490,11 @@ def run_game(screen, infoObject):
         if stuck2 <= 0 and not still_computing2:
             still_computing2 = True
             send_turn(q2_in, player2_location, player1_location, score2, score1, pieces_of_cheese)
-        if args.save:
-            savefile.write("# turn " + str(turns) + " rat_location then python_location then pieces_of_cheese then rat_decision then python_decision\n")
-            savefile.write(str(player1_location) + "\n")
-            savefile.write(str(player2_location) + "\n")
-            savefile.write(str(pieces_of_cheese) + "\n")
+        # if args.save:
+            # savefile.write("# turn " + str(turns) + " rat_location then python_location then pieces_of_cheese then rat_decision then python_decision\n")
+            # savefile.write(str(player1_location) + "\n")
+            # savefile.write(str(player2_location) + "\n")
+            # savefile.write(str(pieces_of_cheese) + "\n")
 
         # Wait for the turn to end
         if not (args.synchronous):
@@ -519,9 +520,9 @@ def run_game(screen, infoObject):
         except:
             decision2 = "None"
 
-        if args.save:
-            savefile.write(decision1 + "\n")
-            savefile.write(decision2 + "\n")
+        # if args.save:
+        #     savefile.write(decision1 + "\n")
+        #     savefile.write(decision2 + "\n")
 
         if args.save_match:
             if stuck1 <= 0:

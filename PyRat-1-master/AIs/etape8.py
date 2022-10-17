@@ -237,6 +237,7 @@ def enemy_proximity_score(graph, target, enemy_location, player_location):
     score = 10 * (coordinate_difference_player // (coordinates_difference_enemy + 1))
     return score
 
+
 def greedy(graph, initial_vertex, vertices_to_visit, opponent_location, player_location, number_of_closest_wanted=False):
     """
     Give the closest vertice to visit and the path to go to it
@@ -314,35 +315,37 @@ def turn(maze_map, maze_width, maze_height, player_location, opponent_location, 
     # Check if cheese still exist
     try:
         pieces_of_cheese.index(target[0])
-    except ValueError: # In case the targeted cheese is not found, we are goind to recalculate the path for the new nearest cheese
+    except ValueError:  # In case the targeted cheese is not found, we are goind to recalculate the path for the new nearest cheese
         recalculate = True
 
     # We are checking if our enemy is following the same path as ours
-    if opponent_location in result_best[index:index+10]:
-        ahead_of_us += 1 
-    else:
+    if opponent_location in result_best[index:index + 9]: # Case enemy is 9 cases or less in front of us
+        ahead_of_us += 1
+    else: # Case python is NOT in front of us
         ahead_of_us = 0
         cheese_to_remove = []
 
-    if ahead_of_us >= 3: # If we have been on the same path for at least 3 turns, there is high chances we have the same target
+    if ahead_of_us >= 5:  # If we have been on the same path for at least 5 turns, there is high chances we have the same target
         recalculate = True
         cheese_to_remove += target
-        for element in cheese_to_remove: # We remove the targeted cheeses to change target
-            try: # Try statement for the case where one of the cheese was taken in the meantime
-                pieces_of_cheese.remove(element) 
+        if len(pieces_of_cheese) == len(cheese_to_remove): # In case our program deemed that all cheeses should be removed, we wipe it out to prevent errors
+            ahead_of_us = 0
+            recalculate = False
+            cheese_to_remove = []
+            
+        for element in cheese_to_remove:  # We remove the targeted cheeses to change target
+            try:  # Try statement for the case where one of the cheese was taken in the meantime
+                pieces_of_cheese.remove(element)
             except:
                 continue
-    
-    
-    if len(moves) == index or recalculate: # In case we are at destination or we need to recalculate our path, we recalculate it with the new nearest cheese
+
+    if len(moves) == index or recalculate:  # In case we are at destination or we need to recalculate our path, we recalculate it with the new nearest cheese
         recalculate = False
         index = 0
         moves = []
         result_best, target = greedy(maze_map, player_location, pieces_of_cheese, opponent_location, player_location)
         moves_from_locations(result_best)
-    
-    
-    
+
     future_move = moves[index]
     index += 1
     return future_move
