@@ -226,43 +226,40 @@ def give_score(graph, current_vertex, neighbors, opponent_location, player_locat
     return scored_neighbors
 
 
-def greedy(graph, initial_vertex, vertices_to_visit, opponent_location, player_location, number_of_closest_wanted=False):
+def greedy(graph, initial_vertex, vertices_to_visit, opponent_location, player_location):
     """
     Give the closest vertice to visit and the path to go to it
     Variables :
         graph : dict{tuple(int, int), dict{tuple(int, int), int}}
         initial_vertex : tuple(int, int)
         vertices_to_visit : list[tuple(int, int)]
-        number_of_closed_wanted : int, Optional number of closest vertices wanted
     Outputs :
         list[tuple(int, int)] : Path to follow to next closest cheese
         list[tuple(int, int)] : List of chosen cheese
     """
     current_vertex = initial_vertex
     scores = give_score(graph, current_vertex, vertices_to_visit, opponent_location, player_location)
-    if not (number_of_closest_wanted) or number_of_closest_wanted <= 0:
-        distance, greedy_choice, routing_table = hq.heappop(scores)
-        return (find_route(routing_table, current_vertex, greedy_choice), [greedy_choice])
-    else:
-        route = []
-        cheeses = []
-        for i in range(number_of_closest_wanted):
-            distance, greedy_choice, routing_table = hq.heappop(scores)
-            route.append(find_route(routing_table, current_vertex, greedy_choice))
-            cheeses.append(greedy_choice)
-        return (route, cheeses)
+    distance, greedy_choice, routing_table = hq.heappop(scores)
+    return (find_route(routing_table, current_vertex, greedy_choice), [greedy_choice])
 
 def build_cheeses_scores(maze_map, cheeses):
-    from math import log
+    """
+    This function will quantify how each cheese is "accessible" comparatively to others. It will generally assign a score between 10 and 20 to each cheese, the smaller the better.
+    Input :
+        maze_map : dict{tuple(int, int), dict{tuple(int, int), int}}
+        cheeses : list[tuple(int, int)]
+    Outputs :
+        dict{tuple(int, int): int}
+    """
     cheeses_score = {}
-    for i in range(len(cheeses)):
+    for i in range(len(cheeses)): # For each of our cheese
         current_vertex = cheeses[i]
-        distances = dijkstra(current_vertex, maze_map)[1]
+        distances = dijkstra(current_vertex, maze_map)[1] # We get it's distance table optimized with dijkstra
         cheeses_score[current_vertex] = 0
-        for j in range(len(cheeses)):
-            if i != j:
-                cheeses_score[current_vertex] += distances[cheeses[j]]
-        cheeses_score[current_vertex] = int(cheeses_score[current_vertex] * 0.01)
+        for j in range(len(cheeses)): # Then for each cheese
+            if i != j: # Other than himself
+                cheeses_score[current_vertex] += distances[cheeses[j]] # We take the distance between both cheeses
+        cheeses_score[current_vertex] = int((cheeses_score[current_vertex]*0.01)) # Now we compute the cheese's final score, by toning it down and flooring him, for our function give_score
     return cheeses_score
 
 ##############################################################
@@ -284,9 +281,10 @@ def preprocessing(maze_map, maze_width, maze_height, player_location, opponent_l
     global target
     global result_best
     global cheeses_scores
-    cheeses_scores = build_cheeses_scores(maze_map, pieces_of_cheese)
-    result_best, target = greedy(maze_map, player_location, pieces_of_cheese, opponent_location, player_location)
-    moves_from_locations(result_best)
+    
+    cheeses_scores = build_cheeses_scores(maze_map, pieces_of_cheese) # We build right now a dictionary basically quantifying how cheeses are close to each others
+    result_best, target = greedy(maze_map, player_location, pieces_of_cheese, opponent_location, player_location) # We launch our first greedy
+    moves_from_locations(result_best) # And we compute it into our queue
 
 
 ##############################################################
@@ -318,7 +316,7 @@ def turn(maze_map, maze_width, maze_height, player_location, opponent_location, 
     # Check if cheese still exist
     try:
         pieces_of_cheese.index(target[0])
-    except ValueError:  # In case the targeted cheese is not found, we are goind to recalculate the path for the new nearest cheese
+    except ValueError:  # In case the targeted cheese is not found, we are going to recalculate the path for the new nearest cheese
         recalculate = True
 
     # We are checking if our enemy is following the same path as ours
