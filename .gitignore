@@ -128,3 +128,7 @@ dmypy.json
 # Pyre type checker
 .pyre/
 test.py
+
+
+PyRat-1-master/saves/*
+!PyRat-1-master/saves/.gitkeep
