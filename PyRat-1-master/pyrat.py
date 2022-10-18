@@ -286,7 +286,7 @@ def run_game(screen, infoObject):
     if pieces_of_cheese == []:
         pieces_of_cheese, player1_location, player2_location = generate_pieces_of_cheese(args.pieces, width, height, not (args.nonsymmetric), player1_location, player2_location, args.start_random)
     if args.save:
-        savefile = open("saves" + os.path.sep + str(int(round(time.time() * 1000))), 'w')
+        savefile = open("/home/bebertdechast/Documents/gitstuff/pyrat_IMT_S1/PyRat-1-master/saves" + os.path.sep + str(int(round(time.time() * 1000))), 'w')
         savefile.write("{'x' :" +f"{args.width}, 'y' :" + f"{args.height}"+"}\n")        
         # savefile.write("# Random seed\n")
         # savefile.write(str(random_seed) + "\n")
