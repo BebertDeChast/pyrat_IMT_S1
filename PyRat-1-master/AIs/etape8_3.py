@@ -340,16 +340,16 @@ def turn(maze_map, maze_width, maze_height, player_location, opponent_location, 
     if ahead_of_us >= 5:  # If we have been on the same path for at least 5 turns, there is high chances we have the same target
         recalculate = True
         cheese_to_remove += target
-        if len(pieces_of_cheese) == len(cheese_to_remove): # In case our program deemed that all cheeses should be removed, we wipe it out to prevent errors
-            ahead_of_us = 0
-            recalculate = False
-            cheese_to_remove = []
             
         for element in cheese_to_remove:  # We remove the targeted cheeses to change target
-            try:  # Try statement for the case where one of the cheese was taken in the meantime
-                pieces_of_cheese.remove(element)
-            except:
-                continue
+            if len(pieces_of_cheese) > 1:
+                try:  # Try statement for the case where one of the cheese was taken in the meantime
+                    pieces_of_cheese.remove(element)
+                except:
+                    continue
+            else:
+                ahead_of_us = 0
+                cheese_to_remove = []
 
     # We are gonna check if the enemy is near our target
     distances = dijkstra(target[0], maze_map)[1]
