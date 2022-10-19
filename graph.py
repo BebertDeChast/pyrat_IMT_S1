@@ -84,6 +84,7 @@ def draw():
     plt.ylabel(f"Win rate in {n_test} try")
     plt.title("Result of duel with etape6_1 (greedy with eyes)")
     plt.legend()
+    plt.savefig("./result.png",dpi = 600)
     plt.show()
 
 
@@ -106,7 +107,7 @@ def main():
     read_datas()
     draw()
 
-# read_datas()
-# draw()
+read_datas()
+draw()
 # clear_saves()
-main()
+# main()
