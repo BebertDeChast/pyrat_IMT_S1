@@ -274,7 +274,7 @@ def run_game(screen, infoObject):
         random_seed = random.randint(0, sys.maxsize)
     else:
         random_seed = args.random_seed
-    print("Using seed " + str(random_seed), file=sys.stderr)
+    # print("Using seed " + str(random_seed), file=sys.stderr)
     width, height, pieces_of_cheese, maze, player1_location, player2_location = generate_maze(args.width, args.height, args.density, not (args.nonconnected), not (args.nonsymmetric), args.mud_density, args.mud_range, args.maze_file, random_seed)
     if args.maze_file:
         args.pieces = len(pieces_of_cheese)
@@ -459,28 +459,28 @@ def run_game(screen, infoObject):
         # Check if one of the players won
         if args.rat != "" and args.python != "":
             if score1 == score2 and score1 >= args.pieces / 2:
-                send_info("The Rat(" + p1name + ") and the Python (" + p2name + ") got the same number of pieces of cheese!", q_info)
+                # send_info("The Rat(" + p1name + ") and the Python (" + p2name + ") got the same number of pieces of cheese!", q_info)
                 break
             if score1 > args.pieces / 2:
-                send_info("The Rat (" + p1name + ") won the match!", q_info)
+                # send_info("The Rat (" + p1name + ") won the match!", q_info)
                 win1 = win1 + 1
                 break
             if score2 > args.pieces / 2:
-                send_info("The Python (" + p2name + ") won the match!", q_info)
+                # send_info("The Python (" + p2name + ") won the match!", q_info)
                 win2 = win2 + 1
                 break
         else:
             if score1 >= args.pieces:
-                send_info("The Rat (" + p1name + ") got all pieces of cheese!", q_info)
+                # send_info("The Rat (" + p1name + ") got all pieces of cheese!", q_info)
                 win1 = win1 + 1
                 break
             elif score2 >= args.pieces:
-                send_info("The Python (" + p2name + ") got all pieces of cheese!", q_info)
+                # send_info("The Python (" + p2name + ") got all pieces of cheese!", q_info)
                 win2 = win2 + 1
                 break
         # Or if there is no more cheese
         if len(pieces_of_cheese) == 0:
-            send_info("No more pieces of cheese!", q_info)
+            # send_info("No more pieces of cheese!", q_info)
             break
 
         # If players can move, ask them their next decision
@@ -659,7 +659,7 @@ def main():
     # Run other games (if any)
     for i in range(args.tests - 1):
         debug("Starting match number " + str(i))
-        print("match " + str(i + 2) + "/" + str(args.tests))
+        print("match " + str(i + 2) + "/" + str(args.tests), end='\r')
         new = run_game(screen, infoObject)
         debug("Aggregating stats")
         result = {x: result.get(x, 0) + new.get(x, 0) for x in set(result).union(new)}
