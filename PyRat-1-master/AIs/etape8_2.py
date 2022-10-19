@@ -210,7 +210,7 @@ def tsp(meta_graph, initial_vertex):
 
 def give_score(graph, current_vertex, neighbors, opponent_location, player_location):
     """
-    Associates a score with eache neighbor of the current vertex. The lower the score the better.
+    Associates a score with each neighbor of the current vertex. The lower the score the better.
     Variables :
         graph : dict{tuple(int, int), dict{tuple(int, int), int}}
         current_vertex : tuple(int, int)
@@ -219,9 +219,9 @@ def give_score(graph, current_vertex, neighbors, opponent_location, player_locat
     """
     global cheeses_scores
     scored_neighbors = []
+    routing_table, distance_table = dijkstra(current_vertex, graph)
     for i in range(len(neighbors)):  # We cycle through our neighbors
         neighbor = neighbors[i]
-        routing_table, distance_table = dijkstra(current_vertex, graph, neighbor)
 
         hq.heappush(scored_neighbors, (distance_table[neighbor] + cheeses_scores[neighbor], neighbor, routing_table))  # For each vertex, we associate to it the distance found
     return scored_neighbors
@@ -321,17 +321,10 @@ def turn(maze_map, maze_width, maze_height, player_location, opponent_location, 
     except ValueError:  # In case the targeted cheese is not found, we are going to recalculate the path for the new nearest cheese
         recalculate = True
 
-    # We are handling case when we are on the same position
-    if index > 0:
-        if opponent_location == result_best[index]:
-            on_same_position += 1 # We count for how many time we have the same position
-        else:
-            on_same_position = 0
-    if on_same_position == 10: # If we stayed 10 times in the same position, it means that our chase algorithms are overlapping, we need to break the cycle
-        return; # We don't move, to stop being in the same case as our enemy and go away
+    
 
     # We are checking if our enemy is following the same path as ours
-    if opponent_location in result_best[index:index + 9]: # Case enemy is 9 cases or less in front of us
+    if opponent_location in result_best[index + 1:index + 9]: # Case enemy is 9 cases or less in front of us
         ahead_of_us += 1
     else: # Case python is NOT in front of us
         ahead_of_us = 0
@@ -351,11 +344,13 @@ def turn(maze_map, maze_width, maze_height, player_location, opponent_location, 
             except:
                 continue
 
-    if abs(target[0][0] - opponent_location[0]) + abs(target[0][1] - opponent_location[1]) <= 3:
-        recalculate = True
-        print("enemy near target ! bailing out !")
-        if len(pieces_of_cheese) > 1 and target[0] in pieces_of_cheese:
-            pieces_of_cheese.remove(target[0])
+    # We are gonna check if the enemy is near our target
+    distances = dijkstra(target[0], maze_map)[1]
+    if distances[opponent_location] <= 7:
+        if distances[player_location] > 7: # We check if we are closer than the enemy
+            recalculate = True # If not, we go to a new target
+            if len(pieces_of_cheese) > 1 and target[0] in pieces_of_cheese:
+                pieces_of_cheese.remove(target[0])
 
     if len(moves) == index or recalculate:  # In case we are at destination or we need to recalculate our path, we recalculate it with the new nearest cheese
         recalculate = False
