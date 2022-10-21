@@ -6,7 +6,13 @@ import numpy as np
 import os
 
 
-ai_list = ["etape8_1", "etape8", "etape8_enemyScore_scraped", "etape8_2", "etape8_3"]
+ai_list = [
+    # "etape8_1",
+    # "etape8",
+    "etape8_enemyScore_scraped",
+    "etape8_2",
+    "etape8_3"
+]
 
 save_path = "PyRat-1-master/saves/"
 # rat_path = "PyRat-1-master/AIs/etape8_1.py"
@@ -15,7 +21,7 @@ python_path = "PyRat-1-master/AIs/etape6_1.py"
 n_test = 150
 n_min = 5
 n_max = 45
-n_step = 4 # must be odd
+n_step = 4  # must be odd
 x_list = [n for n in range(n_min, n_max + n_step, n_step)]
 rat_list = [0 for n in range(n_min, n_max + n_step, n_step)]
 python_list = [0 for n in range(n_min, n_max + n_step, n_step)]
@@ -34,7 +40,7 @@ def test(rat_path, python_path, n_test):
     global x_list
     for n in x_list:
         assert (n % 2 == 1)
-        system(f"python3 PyRat-1-master/pyrat.py --rat {rat_path} --python {python_path} --nodrawing --synchronous --test {n_test} -x {n} -y {n} -p {n} --save")
+        system(f"python3 PyRat-1-master/pyrat.py --rat {rat_path} --python {python_path} --nodrawing --test {n_test} -x {n} -y {n} -p {n} --save --synchronous")
 
 
 def create_datas():
@@ -94,9 +100,9 @@ def draw():
         ax2 = ax1.twinx()
         t, = ax1.plot(x_list, datas[i + 1], label=f"win rate of {datas[i]}")
         cl = t.get_color()
-        ax1.plot(x_list, datas[i + 2], color=cl, linestyle="--", label = "Win rate of etape6_1")
+        ax1.plot(x_list, datas[i + 2], color=cl, linestyle="--", label="Win rate of etape6_1")
         ax2.bar(x_list, datas[i + 3], color=cl, alpha=0.5)
-        ax2.set_ylim(0,max_miss*1.10)
+        ax2.set_ylim(0, max_miss * 1.10)
 
         ax1.set_xlabel("Size of maze and number of cheese")
         ax1.set_ylabel(f"Win rate in {n_test} try")
@@ -128,7 +134,7 @@ def main():
     draw()
 
 
-# read_datas()
-# draw()
-clear_saves()
-main()
+read_datas()
+draw()
+# clear_saves()
+# main()
