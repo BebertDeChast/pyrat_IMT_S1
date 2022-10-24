@@ -10,13 +10,13 @@ ai_list = [
     # "etape8_1",
     # "etape8",
     "etape8_enemyScore_scraped",
-    "etape8_2",
-    "etape8_3"
+    # "etape8_2",
+    # "etape8_3"
 ]
 
 save_path = "PyRat-1-master/saves/"
 # rat_path = "PyRat-1-master/AIs/etape8_1.py"
-python_path = "PyRat-1-master/AIs/etape6_1.py"
+python_path = "PyRat-1-master/AIs/etape8_1.py"
 
 n_test = 150
 n_min = 5
@@ -97,18 +97,19 @@ def draw():
     datas, max_miss = read_datas()
     for i in range(0, len(datas), 4):
         # i = 16
+        datas[i] = "enemy_score"
         f, ax1 = plt.subplots(constrained_layout=True)
-        ax2 = ax1.twinx()
+        # ax2 = ax1.twinx()
         t, = ax1.plot(x_list, datas[i + 1], label=f"win rate of {datas[i]}")
         cl = t.get_color()
-        ax1.plot(x_list, datas[i + 2], color=cl, linestyle="--", label="Win rate of greedy")
-        ax2.bar(x_list, datas[i + 3], color=cl, alpha=0.5)
-        ax2.set_ylim(0, max_miss * 1.10)
+        ax1.plot(x_list, datas[i + 2], color=cl, linestyle="--", label="Win rate of cheese_score")
+        # ax2.bar(x_list, datas[i + 3], color=cl, alpha=0.5)
+        # ax2.set_ylim(0, max_miss * 1.10)
 
         ax1.set_xlabel("Size of maze and number of cheeses")
         ax1.set_ylabel(f"Win rate in {n_test} tries")
-        ax2.set_ylabel("Mean of misses")
-        plt.title(f"Result of duel between {datas[i]} and greedy")
+        # ax2.set_ylabel("Mean of misses")
+        plt.title(f"Result of duel between {datas[i]} and cheese_score")
         ax1.legend()
         plt.savefig(f"./result_{datas[i]}.png", dpi=600)
         # return
@@ -136,7 +137,7 @@ def main():
     draw()
 
 
-read_datas()
-draw()
-# clear_saves()
-# main()
+# read_datas()
+# draw()
+clear_saves()
+main()
