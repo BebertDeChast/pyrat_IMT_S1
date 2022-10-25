@@ -133,7 +133,7 @@ def dijkstra(start_vertex: tuple, graph, target=None):
             has_been_explored[current_vertex] = True
             distance_table[current_vertex] = length
             routing_table[current_vertex] = current_parent
-            if current_vertex == target:
+            if current_vertex == target:  # stop if target reached to avoid useless calcul. If target let to default it will never triger
                 return routing_table, distance_table
 
             neighbors = find_neighbors(graph, current_vertex)
@@ -161,15 +161,15 @@ def build_meta_graph(maze_map, cheese_list, starting_location):
     """
     meta_routing_table = {}
     meta_graph = {}
-    locations = [starting_location] + cheese_list
+    locations = [starting_location] + cheese_list  # all vertcices we need for the meta graph
     for i in range(len(locations)):
         location = locations[i]
         meta_graph[location] = dict()
         routing_table, distance_table = dijkstra(location, maze_map)
-        meta_routing_table[location] = routing_table
+        meta_routing_table[location] = routing_table  # We stock the routing table in a dict keyed by origin vertices
         for j in range(len(locations)):
             if j != i:
-                meta_graph[location][locations[j]] = distance_table[locations[j]]
+                meta_graph[location][locations[j]] = distance_table[locations[j]]  # We create the edge if it's not an edge on itself
     return meta_graph, meta_routing_table
 
 
@@ -208,26 +208,25 @@ def tsp(meta_graph, initial_vertex):
     return best_path
 
 
-def give_score(graph, current_vertex, neighbors, opponent_location, player_location):
+def give_score(graph, current_vertex, targets):
     """
-    Associates a score with each neighbor of the current vertex. The lower the score the better.
+    Associates a score with each target of the current vertex. The lower the score the better.
     Variables :
         graph : dict{tuple(int, int), dict{tuple(int, int), int}}
         current_vertex : tuple(int, int)
         neighbors : list[tuple(int,int)]
-    Outputs : list[tuple(int, tuple(int, int), routing_table)], an heapq containing neighbors associated with their score
+    Outputs : list[tuple(int, tuple(int, int), routing_table)], an heapq containing target associated with their score
     """
     global cheeses_scores
-    scored_neighbors = []
-    routing_table, distance_table = dijkstra(current_vertex, graph)
-    for i in range(len(neighbors)):  # We cycle through our neighbors
-        neighbor = neighbors[i]
+    scored_targets = []
+    routing_table, distance_table = dijkstra(current_vertex, graph)  # We also keep the routing table to store it, it will take space but save some precious time at the end
+    for i in range(len(targets)):  # We cycle through our neighbors
+        neighbor = targets[i]
+        hq.heappush(scored_targets, (distance_table[neighbor] + cheeses_scores[neighbor], neighbor, routing_table))  # we associate each vertex to distance found + cheese score
+    return scored_targets
 
-        hq.heappush(scored_neighbors, (distance_table[neighbor] + cheeses_scores[neighbor], neighbor, routing_table))  # For each vertex, we associate to it the distance found
-    return scored_neighbors
 
-
-def greedy(graph, initial_vertex, vertices_to_visit, opponent_location, player_location):
+def greedy(graph, initial_vertex, vertices_to_visit):
     """
     Give the closest vertice to visit and the path to go to it
     Variables :
@@ -239,9 +238,10 @@ def greedy(graph, initial_vertex, vertices_to_visit, opponent_location, player_l
         list[tuple(int, int)] : List of chosen cheese
     """
     current_vertex = initial_vertex
-    scores = give_score(graph, current_vertex, vertices_to_visit, opponent_location, player_location)
-    distance, greedy_choice, routing_table = hq.heappop(scores)
-    return (find_route(routing_table, current_vertex, greedy_choice), [greedy_choice])
+    scores = give_score(graph, current_vertex, vertices_to_visit)  # We get all the scores from our dedicated function
+    distance, greedy_choice, routing_table = hq.heappop(scores)  # Now we pop to obtain the vertex with the smallest distance
+    return (find_route(routing_table, current_vertex, greedy_choice), [greedy_choice])  # We return the route to follow with find_route, and the targeted vertice
+
 
 def build_cheeses_scores(maze_map, cheeses):
     """
@@ -253,15 +253,15 @@ def build_cheeses_scores(maze_map, cheeses):
         dict{tuple(int, int): int}
     """
     cheeses_score = {}
-    for i in range(len(cheeses)): # For each of our cheese
+    for i in range(len(cheeses)):  # For each of our cheese
         current_vertex = cheeses[i]
-        distances = dijkstra(current_vertex, maze_map)[1] # We get it's distance table optimized with dijkstra
+        distances = dijkstra(current_vertex, maze_map)[1]  # We get it's distance table optimized with dijkstra
         cheeses_score[current_vertex] = 0
-        for j in range(len(cheeses)): # Then for each cheese
-            if i != j: # Other than himself
-                cheeses_score[current_vertex] += distances[cheeses[j]] # We take the distance between both cheeses
-        cheeses_score[current_vertex] = int((cheeses_score[current_vertex]*0.01)) # Now we compute the cheese's final score, by toning it down and flooring him, for our function give_score
-    return cheeses_score
+        for j in range(len(cheeses)):  # Then for each cheese
+            if i != j:  # Other than himself
+                cheeses_score[current_vertex] += distances[cheeses[j]]  # We take the distance between both cheeses
+        cheeses_score[current_vertex] = int((cheeses_score[current_vertex] * 0.01))  # Now we compute the cheese's final score, by toning it down and flooring him
+    return cheeses_score  # the output will be for our function give_score
 
 ##############################################################
 # The preprocessing function is called at the start of a game
@@ -282,11 +282,10 @@ def preprocessing(maze_map, maze_width, maze_height, player_location, opponent_l
     global target
     global result_best
     global cheeses_scores
-    
-    print("Courtesy of Cocobongo Corporation")
-    cheeses_scores = build_cheeses_scores(maze_map, pieces_of_cheese) # We build right now a dictionary basically quantifying how cheeses are close to each others
-    result_best, target = greedy(maze_map, player_location, pieces_of_cheese, opponent_location, player_location) # We launch our first greedy
-    moves_from_locations(result_best) # And we compute it into our queue
+
+    cheeses_scores = build_cheeses_scores(maze_map, pieces_of_cheese)  # We build right now a dictionary basically quantifying how cheeses are close to each others
+    result_best, target = greedy(maze_map, player_location, pieces_of_cheese, opponent_location, player_location)  # We launch our first greedy
+    moves_from_locations(result_best)  # And we compute it into our queue
 
 
 ##############################################################
@@ -321,50 +320,52 @@ def turn(maze_map, maze_width, maze_height, player_location, opponent_location, 
         pieces_of_cheese.index(target[0])
     except ValueError:  # In case the targeted cheese is not found, we are going to recalculate the path for the new nearest cheese
         recalculate = True
-    
-    # We are checking if our enemy is following the same path as ours and is in front of us
-    if opponent_location in result_best[index + 1:index + 9]: # Case enemy is 9 cases or less in front of us
-        ahead_of_us += 1
-    else: # Case python is NOT in front of us
-        ahead_of_us = 0
-        cheese_to_remove = []
 
-    # We are handling case when we are on the same position
+    # * We are checking if our enemy is following the same path as ours and is in front of us
+    if opponent_location in result_best[index + 1:index + 9]:  # Case enemy is 9 cases or less in front of us
+        ahead_of_us += 1  # We increment the number of time the enemy has been in front of us
+    else:  # Case enemy is NOT in front of us
+        ahead_of_us = 0  # We reset the counter
+        cheese_to_remove = []  # We reset our cheese filter
+
+    # * We are handling case when we are on the same position
     if opponent_location == result_best[index]:
-        on_same_position += 1 # We count for how many time we have the same position
+        on_same_position += 1  # We count for how many time we have the same position
     else:
         on_same_position = 0
-    if on_same_position >= 5: # If we stayed 5+ times in the same position, it means that we are on the same path, on the same case
+    if on_same_position >= 5:  # If we stayed 5+ times in the same position, it means that we are on the same path, on the same case
         if player_score < opponent_score:
-            ahead_of_us = 5 # If we have a lower score, it's not worth to share the cheeses, we need to go away !
+            ahead_of_us = 5  # If we have a lower score, it's not worth to share the cheeses, we need to go away !
+            # ahead_of_us = 5 triggers the code see in the pursuit heuristic, to remove the cheeses that are not favorable to us
 
     if ahead_of_us >= 5:  # If we have been on the same path for at least 5 turns, there is high chances we have the same target
-        recalculate = True
-        cheese_to_remove += target
-            
+        recalculate = True  # We indicate that we should recalculate our greedy at the end of turn after having filtered the unfavorable cheeses
+        cheese_to_remove += target  # We add the current cheese to the cheeses to filter
+
         for element in cheese_to_remove:  # We remove the targeted cheeses to change target
-            if len(pieces_of_cheese) > 1:
+            if len(pieces_of_cheese) > 1:  # We make sure we are not removing all the cheeses from the list
                 try:  # Try statement for the case where one of the cheese was taken in the meantime
                     pieces_of_cheese.remove(element)
                 except:
                     continue
-            else:
-                ahead_of_us = 0
-                cheese_to_remove = []
+            else:  # In case we want to remove all the cheeses, it means that there is not cheese that is "favorable" to us, therefore we should go to our initial choice
+                ahead_of_us = 0  # We reset the counter
+                cheese_to_remove = []  # We reset our list of cheeses to filter
 
-    # We are gonna check if the enemy is near our target
+    # * We are gonna check if the enemy is near our target
     distances = dijkstra(target[0], maze_map)[1]
     if distances[opponent_location] <= 7:
-        if distances[player_location] > 7: # We check if we are closer than the enemy
-            recalculate = True # If not, we go to a new target
-            if len(pieces_of_cheese) > 1 and target[0] in pieces_of_cheese:
+        if distances[player_location] > 7:  # We check if we are closer than the enemy
+            recalculate = True  # If not, we go to a new target
+            if len(pieces_of_cheese) > 1 and target[0] in pieces_of_cheese: # We remove the cheese of our list before recalculating with
                 pieces_of_cheese.remove(target[0])
+        # Else, we continue as usual
 
     if len(moves) == index or recalculate:  # In case we are at destination or we need to recalculate our path, we recalculate it with the new nearest cheese
         recalculate = False
         index = 0
         moves = []
-        result_best, target = greedy(maze_map, player_location, pieces_of_cheese, opponent_location, player_location)
+        result_best, target = greedy(maze_map, player_location, pieces_of_cheese)
         moves_from_locations(result_best)
 
     future_move = moves[index]
